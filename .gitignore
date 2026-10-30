@@ -1,0 +1,36 @@
+# Java / Maven
+backend/target/
+target/
+**/target/
+*.class
+
+# Node / Vite
+frontend/node_modules/
+node_modules/
+**/node_modules/
+frontend/dist/
+dist/
+**/dist/
+build/
+**/build/
+frontend/.vite/
+npm-debug.log*
+*.log
+*.tmp
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Test and tool caches
+coverage/
+.cache/

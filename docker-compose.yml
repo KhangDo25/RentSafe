@@ -1,0 +1,44 @@
+services:
+  mongodb:
+    image: mongo:8.0.4
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?Set MONGO_ROOT_USERNAME in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - rentsafe-mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --username \"$$MONGO_INITDB_ROOT_USERNAME\" --password \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok' | grep 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - rentsafe-internal
+
+  mongodb-replica-init:
+    image: mongo:8.0.4
+    restart: "no"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?Set MONGO_ROOT_USERNAME in .env}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:?Set MONGO_APP_USERNAME in .env}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?Set MONGO_APP_PASSWORD in .env}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:?Set MONGODB_DATABASE in .env}
+      MONGODB_REPLICA_MEMBER_HOST: ${MONGODB_REPLICA_MEMBER_HOST:-mongodb:27017}
+    entrypoint: ["/bin/sh", "/scripts/mongodb-init.sh"]
+    volumes:
+      - ./docker/mongodb-init.sh:/scripts/mongodb-init.sh:ro
+    networks:
+      - rentsafe-internal
+
+volumes:
+  rentsafe-mongodb-data:
+
+networks:
+  rentsafe-internal:
+    internal: true

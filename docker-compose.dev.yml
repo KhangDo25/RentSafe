@@ -1,0 +1,9 @@
+# Development only. It must not be included in a deployed installation.
+services:
+  mongodb-replica-init:
+    environment:
+      MONGODB_REPLICA_MEMBER_HOST: localhost:27017
+
+  mongodb:
+    ports:
+      - "127.0.0.1:${MONGODB_DEV_PORT:-27017}:27017"
